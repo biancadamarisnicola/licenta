@@ -12,15 +12,16 @@ public class Network {
     private Layer layers[];
     private double epsilon;
     private int noEpoch;
+    private double learningRate = 0.001;
 
 
-    public Network(int input, int output, int hidden, int neurons, double epsilon, int noEpoch) throws IOException {
-        noOfInputs = input;
-        noOfOutput = output;
-        noOfHiddenLayers = hidden;
+    public Network(int noInput, int noOutput, int noHidden, int noNeurons, double epsilon, int noEpoch) throws IOException {
+        noOfInputs = noInput;
+        noOfOutput = noOutput;
+        noOfHiddenLayers = noHidden;
         this.epsilon = epsilon;
         this.noEpoch = noEpoch;
-        int noOfNeuronLayer = neurons;
+        int noOfNeuronLayer = noNeurons;
         layers = new Layer[noOfNeuronLayer + 2];
         layers[0] = new Layer(noOfInputs, 0);
         layers[1] = new Layer(noOfNeuronLayer, noOfInputs);
@@ -68,13 +69,16 @@ public class Network {
                     }
                     //setam eroarea pe layer
                     layers[l].getNeuron(i).setError(errorSum);
+                    //System.out.println(layers[l].getNeuron(i).toString());
                     //System.out.println(errorSum);
                     //System.out.print("Layer "+l+" neuron "+i+" err "+error[i]);
                 }
                 //se seteaza ponderile
                 double netWeigth = 0.0;
                 for (int j = 0; j < layers[l].getNeuron(i).getNoOfInputs(); j++) {
-                    netWeigth = layers[l].getNeuron(i).getWeight(j) - 0.01 * layers[l].getNeuron(i).getError() * layers[l - 1].getNeuron(j).getOutput();
+                    double error2 = layers[l].getNeuron(i).getError();
+                    learningRate = getNewLearningRate(error2);
+                    netWeigth = layers[l].getNeuron(i).getWeight(j) + learningRate * layers[l].getNeuron(i).getError() * layers[l - 1].getNeuron(j).getOutput();
                     //netWeigth = normalize(netWeigth);
                     layers[l].getNeuron(i).setWeight(j, netWeigth);
                     //System.out.println(netWeigth);
@@ -83,6 +87,16 @@ public class Network {
                 //System.out.println();
             }
         }
+    }
+
+    private double getNewLearningRate(double error2) {
+        if (error2 > 300) {
+            return 0.1;
+        }
+        if (error2 > 100) {
+            return 0.01;
+        }
+        return 0.001;
     }
 
     private void normalize(Neuron neuron) {
@@ -96,14 +110,14 @@ public class Network {
                 neuron.setWeight(j, 0.05);
             }
         }
-        if (maxWeigth<Math.abs(minWeigth))
+        if (maxWeigth < Math.abs(minWeigth))
             maxWeigth = minWeigth;
-        while (maxWeigth > 0.2 || maxWeigth<-0.2) {
+        while (maxWeigth > 0.2 || maxWeigth < -0.2) {
             for (int j = 0; j < neuron.getWeights().length; j++) {
                 double n = neuron.getWeight(j);
-                neuron.setWeight(j,n/10);
+                neuron.setWeight(j, n / 10);
             }
-            maxWeigth = maxWeigth/10;
+            maxWeigth = maxWeigth / 10;
         }
     }
 
@@ -156,14 +170,14 @@ public class Network {
 
     public void test(double input[][], double output[][]) throws IOException {
         System.out.println("@@@@@@@@@@@@@TESTING@@@@@@@@@@@@@@@@@@@@@");
-        for(int d = 0; d < input.length; d++){
+        for (int d = 0; d < input.length; d++) {
             int noOfHidden = 1;
             int noOfNeuronsPerLayer = 3;
             Network networkTest = new Network(7, 3, noOfHidden, noOfNeuronsPerLayer, 0.7, 100);
             networkTest.activate(input[d]);
             Layer actualOutput = networkTest.getLayer(2);
-            System.out.println("Expected output: SLUMP(cm): "+output[d][0]+"  FLOW(cm): "+output[d][1]+"  Compressive Strength (28-day): "+output[d][2]);
-            System.out.println("Actual output:   SLUMP(cm): "+actualOutput.getNeuron(0).getOutput()+"  FLOW(cm): "+actualOutput.getNeuron(1).getOutput()+"  Compressive Strength (28-day): "+actualOutput.getNeuron(2).getOutput());
+            System.out.println("Expected output: SLUMP(cm): " + output[d][0] + "  FLOW(cm): " + output[d][1] + "  Compressive Strength (28-day): " + output[d][2]);
+            System.out.println("Actual output:   SLUMP(cm): " + actualOutput.getNeuron(0).getOutput() + "  FLOW(cm): " + actualOutput.getNeuron(1).getOutput() + "  Compressive Strength (28-day): " + actualOutput.getNeuron(2).getOutput());
         }
     }
 }
