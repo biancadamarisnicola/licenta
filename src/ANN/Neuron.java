@@ -1,6 +1,7 @@
 package ANN;
 
 import java.util.Arrays;
+import java.util.Random;
 
 /**
  * Created by bianca on 19.08.2016.
@@ -14,33 +15,50 @@ public class Neuron {
 
     //fields
     private int noOfInputs;
-    private Double weights[];
-    private double output, error;
+    private Fraction weights[];
+    private Fraction output, error;
+    private Fraction bias;
 
     public Neuron(int n) {
         noOfInputs = n;
-        weights = new Double[noOfInputs];
-        for (int i = 0; i < n; i++) {
-            weights[i] = MIN_WEIGHT +
-                    (Math.random() * RAND_MAX) / (RAND_MAX + 1) * (MAX_WEIGHT - MIN_WEIGHT);
+        initWeights(n);
+        output = new Fraction();
+        error = new Fraction();
+    }
+
+    private void initWeights(int noOfInputs) {
+        weights = new Fraction[noOfInputs];
+        Random random = new Random();
+        for (int i = 0; i < noOfInputs; i++) {
+//            weights[i] = MIN_WEIGHT +
+//                    (Math.random() * RAND_MAX) / (RAND_MAX + 1) * (MAX_WEIGHT - MIN_WEIGHT);
+            weights[i] = new Fraction().valueOf(random.nextGaussian() * 0.8).normalize();
         }
-        output = 0.0;
-        error = 0.0;
+        bias = new Fraction().valueOf(random.nextGaussian() * 0.8).normalize();
     }
 
     //neuron activation, calculate output
-    public double fire(double[] info) {
-        double net = 0.0;
+    public Fraction fireSoftPlus(Fraction[] info) {
+        Fraction net = new Fraction();
         for (int i = 0; i < noOfInputs; i++) {
-            net += info[i] * weights[i];
+            net = net.add(info[i].mul(weights[i]));
         }
-        //linear function
-        this.output = net;
-        //System.out.println(net);
-        //sigmoidal function
-        //this.output = (1.0/(1.0+Math.pow(Math.E, -net)));
-        //System.out.println(net+ "---" +output);
+        //Soft plus function
+        double fx = Math.log(1+Math.pow(Math.E, net.toDouble()));
+        this.output = new Fraction().valueOf(fx);
         return this.output;
+    }
+
+    public Fraction fireSigmoidal(Fraction[] info) {
+        Fraction net = new Fraction();
+        net = net.add(bias);
+        for (int i = 0; i < noOfInputs; i++) {
+            net = net.add(info[i].mul(weights[i]));
+        }
+        //Sigmodial function
+        double fx =(1.0/(1.0+Math.pow(Math.E, -net.toDouble())));
+        this.output = new Fraction().valueOf(fx);
+        return new Fraction().valueOf(fx);
     }
 
     public int getNoOfInputs() {
@@ -51,43 +69,43 @@ public class Neuron {
         this.noOfInputs = noOfInputs;
     }
 
-    public Double[] getWeights() {
+    public Fraction[] getWeights() {
         return weights;
     }
 
-    public void setWeights(Double[] weights) {
+    public void setWeights(Fraction[] weights) {
         this.weights = weights;
     }
 
-    public double getOutput() {
+    public Fraction getOutput() {
         return output;
     }
 
-    public void setOutput(double output) {
+    public void setOutput(Fraction output) {
         this.output = output;
     }
 
-    public double getError() {
+    public Fraction getError() {
         return error;
     }
 
-    public void setError(double error) {
+    public void setError(Fraction error) {
         this.error = error;
     }
 
-    public double getWeight(int k) {
+    public Fraction getWeight(int k) {
         return weights[k];
     }
 
-    public void setWeight(int k, double netWeigth) {
+    public void setWeight(int k, Fraction netWeigth) {
         this.weights[k] = netWeigth;
     }
 
-    public void setErr(double val){
+    public void setErr(Fraction val){
         //linear function
-        //this.error = val;
+        this.error = val;
         //sigmoidal function
-        this.error = this.output*(1-this.output)*val;
+        //this.error = this.output*(1-this.output)*val;
     }
 
     @Override

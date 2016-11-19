@@ -3,6 +3,7 @@ package ANN;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -12,15 +13,15 @@ import java.util.GregorianCalendar;
  * Created by bianca on 19.08.2016.
  */
 public class Controller {
-    private double input[][], output[][];
-    private double inputTest[][], outputTest[][];
+    private Fraction input[][], output[][];
+    private Fraction inputTest[][], outputTest[][];
     private int noOfExample, noOfExampleTest;
     private int noOfOuputs, noOfOuputsTest;
     private int noOfFeatures, noOfFeaturesTest;
     private int noEpoch;
-    private double epsilon;
+    private Fraction epsilon;
 
-    public Controller(int noEpoch, double epsilon) throws IOException, ParseException {
+    public Controller(int noEpoch, Fraction epsilon) throws IOException, ParseException {
         readInputData();
         this.noEpoch = noEpoch;
         this.epsilon = epsilon;
@@ -33,24 +34,22 @@ public class Controller {
         noOfExample = Integer.parseInt(br.readLine());
         noOfFeatures = Integer.parseInt(br.readLine());
         noOfOuputs = Integer.parseInt(br.readLine());
-        input = new double[noOfExample+1][noOfFeatures];
-        output = new double[noOfExample+1][noOfOuputs];
+        input = new Fraction[noOfExample+1][noOfFeatures];
+        output = new Fraction[noOfExample+1][noOfOuputs];
         FileReader fr1 = new FileReader("dataTest.txt");
         BufferedReader br1 = new BufferedReader(fr1);
         noOfExampleTest = Integer.parseInt(br1.readLine());
         noOfFeaturesTest = Integer.parseInt(br1.readLine());
         noOfOuputsTest = Integer.parseInt(br1.readLine());
-        inputTest = new double[noOfExampleTest][noOfFeaturesTest];
-        outputTest = new double[noOfExampleTest][noOfOuputsTest];
-        for (int i = 0; i < noOfExample-1; i++) {
+        inputTest = new Fraction[noOfExampleTest][noOfFeaturesTest];
+        outputTest = new Fraction[noOfExampleTest][noOfOuputsTest];
+        for (int i = 0; i < noOfExample; i++) {
             String props[] = br.readLine().split("\t");
             int j;
-            input[i][0] = dayOfYear(props[0]);
-            if (i>0) {
-                output[i - 1][0] = Double.parseDouble(props[1]);
-            }
+            input[i][0] = new Fraction(BigInteger.ONE).valueOf(dayOfYear(props[0])).calibreaza();
+            output[i][0] = new Fraction(BigInteger.ONE).valueOf(Double.valueOf(props[6])).calibreaza();
             for (j = 1; j < noOfFeatures; j++) {
-                input[i][j] = Double.parseDouble(props[j]);
+                input[i][j] = new Fraction(BigInteger.ONE).valueOf(Double.valueOf(props[j])).calibreaza();
             }
         }
 //        for (int i = 0; i < noOfExampleTest; i++) {
@@ -80,25 +79,25 @@ public class Controller {
 
     public Layer getOutput() throws IOException, ParseException {
         int noOfHidden = 2;
-        int noOfNeuronsPerLayer = 7;
+        int noOfNeuronsPerLayer = 3;
         Network network = new Network(noOfFeatures, noOfOuputs, noOfHidden, noOfNeuronsPerLayer, epsilon, noEpoch);
         network.learn(input, output);
         //network.test(inputTest, outputTest);
         //pt datele introduse de user
-        double userInput[] = new double[noOfFeatures];
+        Fraction userInput[] = new Fraction[noOfFeatures];
         FileReader fr = new FileReader("userData.txt");
         BufferedReader br = new BufferedReader(fr);
         String props[] = br.readLine().split("\t");
         br.close();
         fr.close();
-        userInput[0] = dayOfYear(props[0]);
+        userInput[0] = new Fraction(BigInteger.ONE).valueOf(dayOfYear(props[0])).calibreaza();
         System.out.println(noOfFeatures);
         for (int i=1; i<noOfFeatures;i++){
-            userInput[i] = Double.parseDouble(props[i]);
+            userInput[i] = new Fraction(BigInteger.ONE).valueOf(Double.valueOf(props[i])).calibreaza();
         }
         network.activate(userInput);
         Layer layer = network.getLayer(noOfHidden+1);
-        System.out.println(network.getLayer(1));
+        //System.out.println(network.getLayer(1));
         return layer;
     }
 }

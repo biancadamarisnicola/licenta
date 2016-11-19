@@ -1,4 +1,5 @@
 import ANN.Controller;
+import ANN.Fraction;
 import ANN.Layer;
 
 import javax.swing.*;
@@ -6,6 +7,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.text.ParseException;
 
 /**
@@ -16,7 +18,7 @@ public class Main {
     private Controller ctrl;
     private JTextField textField;
     private int noEpoch;
-    private double epsilon;
+    private Fraction epsilon;
 
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
@@ -34,7 +36,7 @@ public class Main {
     public Main() throws Exception {
         initialize();
         this.noEpoch = 100;
-        this.epsilon = 0.001;
+        this.epsilon = new Fraction(BigInteger.ONE).valueOf(0.001);
         this.ctrl = new Controller(noEpoch, epsilon);
     }
 
@@ -61,7 +63,7 @@ public class Main {
                 String s = null;
                 try {
                     Layer out = ctrl.getOutput();
-                    s = out.getNeuron(0).getOutput()+"; ";
+                    s = String.valueOf(out.getNeuron(0).getOutput().mul(new Fraction().valueOf(20000)));
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (ParseException e) {
