@@ -37,6 +37,7 @@ public class Main {
         initialize();
         this.noEpoch = 100;
         this.epsilon = new Fraction(BigInteger.ONE).valueOf(0.001);
+
         this.ctrl = new Controller(noEpoch, epsilon);
     }
 

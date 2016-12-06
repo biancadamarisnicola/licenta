@@ -176,8 +176,10 @@ public class Network {
         int epoch = 0;
         Fraction globalErr[];
         while (!stop && epoch < noEpoch) {
-            globalErr = new Fraction[input.length-1];
-            for (int i = 0; i < input.length-1; i++) {
+            //training
+            int noTrainingExamples = 2*input.length/3;
+            globalErr = new Fraction[noTrainingExamples];
+            for (int i = 0; i < noTrainingExamples; i++) {
                 //System.out.println("@@@@@ouput "+i+ "values"+output[i][0]+" "+output[i][1]+" "+output[i][2]+"@@@@@@@");
                 activate(input[i]);
                 //activam neuronii si propagam semnalul in retea
@@ -187,10 +189,30 @@ public class Network {
                 //System.out.println("Global err i="+i+" "+globalErr[i].toDouble());
                 errorBackpropagation(error);
             }
-            stop = checkError(globalErr);
+            //validation
+            for (int i = noTrainingExamples; i < input.length-1; i++) {
+                //System.out.println("@@@@@ouput "+i+ "values"+output[i][0]+" "+output[i][1]+" "+output[i][2]+"@@@@@@@");
+                activate(input[i]);
+            }
+            stop = checkError(globalErr) || validateWeights(input, output, noTrainingExamples, input.length-1);
             epoch++;
             // System.out.println(epoch);
         }
+    }
+
+    private boolean validateWeights(Fraction[][] input, Fraction[][] output, int begin, int end) throws IOException {
+        for (int i = begin; i < end; i++) {
+            activate(input[i]);
+            if (!input[i][noOfHiddenLayers].sub(output[i][noOfHiddenLayers]).greaterThan(new Fraction(BigInteger.ONE).valueOf(10))){
+                System.out.println("!!!!!");
+                return true;
+            }
+            if (!output[i][noOfHiddenLayers].sub(input[i][noOfHiddenLayers]).greaterThan(new Fraction(BigInteger.ONE).valueOf(10))){
+                System.out.println("??????");
+                return true;
+            }
+        }
+        return false;
     }
 
     public Layer getLayer(int i) {
@@ -198,15 +220,20 @@ public class Network {
     }
 
     public void test(Fraction input[][], Fraction output[][]) throws IOException {
-        System.out.println("@@@@@@@@@@@@@TESTING@@@@@@@@@@@@@@@@@@@@@");
+        System.out.println("@@@@@@@@@@@@@TESTING@@@@@@@@@@@@@@@@@@@");
         for (int d = 0; d < input.length; d++) {
             int noOfHidden = 1;
             int noOfNeuronsPerLayer = 3;
-            Network networkTest = new Network(7, 3, noOfHidden, noOfNeuronsPerLayer, new Fraction(BigInteger.ZERO).valueOf(0.7), 100);
+            Network networkTest = new Network(noOfInputs, noOfOutput, noOfHidden, noOfNeuronsPerLayer, new Fraction(BigInteger.ZERO).valueOf(0.001), 100);
             networkTest.activate(input[d]);
             Layer actualOutput = networkTest.getLayer(2);
-            System.out.println("Expected output: SLUMP(cm): " + output[d][0] + "  FLOW(cm): " + output[d][1] + "  Compressive Strength (28-day): " + output[d][2]);
-            System.out.println("Actual output:   SLUMP(cm): " + actualOutput.getNeuron(0).getOutput() + "  FLOW(cm): " + actualOutput.getNeuron(1).getOutput() + "  Compressive Strength (28-day): " + actualOutput.getNeuron(2).getOutput());
+            System.out.println("Expected output: "+ String.valueOf(output[d][0].mul(new Fraction().valueOf(20000))));
+            System.out.println("Actual output: "+ String.valueOf(actualOutput.getNeuron(0).getOutput().mul(new Fraction().valueOf(20000))));
+            System.out.println("__________________________________________________");
         }
+    }
+
+    private int size() {
+        return noOfHiddenLayers+2;
     }
 }

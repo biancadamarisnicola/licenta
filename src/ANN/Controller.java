@@ -52,17 +52,15 @@ public class Controller {
                 input[i][j] = new Fraction(BigInteger.ONE).valueOf(Double.valueOf(props[j])).calibreaza();
             }
         }
-//        for (int i = 0; i < noOfExampleTest; i++) {
-//            String props[] = br1.readLine().split("\t");
-//            int j;
-//            inputTest[i][0] = dayOfYear(props[0]);
-//            for (j = 1; j < noOfFeaturesTest; j++) {
-//                inputTest[i][j] = Double.parseDouble(props[j]);
-//            }
-//            for (int k = 0; k < noOfOuputsTest; k++) {
-//                outputTest[i][k] = Double.parseDouble(props[k+noOfFeaturesTest]);
-//            }
-//        }
+        for (int i = 0; i < noOfExampleTest; i++) {
+            String props[] = br1.readLine().split("\t");
+            int j;
+            inputTest[i][0] = new Fraction(BigInteger.ONE).valueOf(dayOfYear(props[0])).calibreaza();
+            outputTest[i][0] = new Fraction(BigInteger.ONE).valueOf(Double.valueOf(props[6])).calibreaza();
+            for (j = 1; j < noOfFeaturesTest; j++) {
+                inputTest[i][j] = new Fraction(BigInteger.ONE).valueOf(Double.valueOf(props[j])).calibreaza();
+            }
+        }
         br.close();
         fr.close();
         br1.close();
@@ -82,7 +80,7 @@ public class Controller {
         int noOfNeuronsPerLayer = 3;
         Network network = new Network(noOfFeatures, noOfOuputs, noOfHidden, noOfNeuronsPerLayer, epsilon, noEpoch);
         network.learn(input, output);
-        //network.test(inputTest, outputTest);
+        network.test(inputTest, outputTest);
         //pt datele introduse de user
         Fraction userInput[] = new Fraction[noOfFeatures];
         FileReader fr = new FileReader("userData.txt");
